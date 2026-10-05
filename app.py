@@ -1,4 +1,3 @@
-```python
 import streamlit as st
 import pandas as pd
 import random
@@ -803,4 +802,3 @@ st.caption(
     "Projeto educacional. Candidatos, votos e resultados são fictícios. "
     "Não utilizar para eleições reais ou para interferir em processos eleitorais."
 )
-```
