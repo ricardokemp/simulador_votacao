@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
-import random
 
+
+# ============================================================
+# CONFIGURAÇÃO DA PÁGINA
+# ============================================================
 
 st.set_page_config(
     page_title="Simulador de Integridade de Votação",
@@ -11,13 +14,8 @@ st.set_page_config(
 
 
 # ============================================================
-# SIMULADOR EDUCACIONAL
+# ESTADO DA APLICAÇÃO
 # ============================================================
-# Este projeto é uma demonstração de integridade de sistemas.
-# Os candidatos são fictícios e a manipulação é propositalmente
-# visível ao usuário. Não é um sistema eleitoral real.
-# ============================================================
-
 
 if "votos_a" not in st.session_state:
     st.session_state.votos_a = {}
@@ -35,6 +33,10 @@ if "historico" not in st.session_state:
     st.session_state.historico = []
 
 
+# ============================================================
+# CANDIDATOS
+# ============================================================
+
 CANDIDATOS = [
     "Candidato Alfa",
     "Candidato Beta",
@@ -43,9 +45,14 @@ CANDIDATOS = [
 ]
 
 
+# ============================================================
+# ESTILO
+# ============================================================
+
 st.markdown(
     """
     <style>
+
     .titulo {
         font-size: 2.2rem;
         font-weight: 700;
@@ -72,39 +79,77 @@ st.markdown(
         background-color: #eaf7ee;
         margin-bottom: 1rem;
     }
+
     </style>
     """,
     unsafe_allow_html=True
 )
 
 
+# ============================================================
+# TÍTULO
+# ============================================================
+
 st.markdown(
-    '<div class="titulo">🗳️ Simulador de Integridade de Votação</div>',
+    '<div class="titulo">'
+    '🗳️ Simulador de Integridade de Votação'
+    '</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
     '<div class="subtitulo">'
-    'Demonstração educacional de como a integridade de um sistema pode ser comprometida.'
+    'Demonstração educacional de como a integridade de um sistema '
+    'pode ser comprometida.'
     '</div>',
     unsafe_allow_html=True
 )
 
 
-st.warning(
-    "DEMONSTRAÇÃO EDUCACIONAL: todos os candidatos e votos são fictícios. "
-    "O sistema manipulado abaixo existe apenas para demonstrar uma falha de integridade "
-    "e identifica claramente quando a alteração ocorre."
+# ============================================================
+# CONTADOR GERAL DA URNA
+# ============================================================
+
+total_votos_a = sum(
+    st.session_state.votos_a.values()
+)
+
+total_votos_b = sum(
+    st.session_state.votos_b.values()
+)
+
+total_votos_urna = (
+    total_votos_a +
+    total_votos_b
+)
+
+
+st.metric(
+    label="🗳️ Total de votos computados na urna",
+    value=total_votos_urna
 )
 
 
 # ============================================================
-# CONFIGURAÇÃO
+# AVISO EDUCACIONAL
+# ============================================================
+
+st.warning(
+    "DEMONSTRAÇÃO EDUCACIONAL: todos os candidatos e votos são fictícios. "
+    "O sistema manipulado abaixo existe apenas para demonstrar uma falha "
+    "de integridade e identifica claramente quando a alteração ocorre."
+)
+
+
+# ============================================================
+# CONFIGURAÇÃO DA DEMONSTRAÇÃO
 # ============================================================
 
 with st.sidebar:
 
-    st.header("Configuração da demonstração")
+    st.header(
+        "Configuração da demonstração"
+    )
 
     candidato_preferido = st.selectbox(
         "Candidato favorecido no sistema manipulado",
@@ -127,6 +172,7 @@ with st.sidebar:
         "🔄 Reiniciar votação",
         use_container_width=True
     ):
+
         st.session_state.votos_a = {}
         st.session_state.votos_b = {}
         st.session_state.voto_pendente_a = None
@@ -136,34 +182,46 @@ with st.sidebar:
         st.rerun()
 
     st.caption(
-        "A manipulação do Sistema A começa somente após o sistema "
-        "atingir 10 votos registrados."
+        "A alteração do resultado do Sistema A "
+        "começa somente quando a votação atingir "
+        "10 votos registrados."
     )
 
 
 # ============================================================
-# REGISTRO DE VOTOS
+# FUNÇÃO PARA REGISTRAR VOTO PENDENTE
 # ============================================================
 
 def registrar_voto(sistema, candidato):
 
     if sistema == "A":
+
         st.session_state.voto_pendente_a = candidato
 
-    else:
+    elif sistema == "B":
+
         st.session_state.voto_pendente_b = candidato
 
+
+# ============================================================
+# FUNÇÃO PARA CONFIRMAR VOTO
+# ============================================================
 
 def confirmar_voto(sistema):
 
     if sistema == "A":
 
-        candidato = st.session_state.voto_pendente_a
+        candidato = (
+            st.session_state.voto_pendente_a
+        )
 
         if candidato:
 
             st.session_state.votos_a[candidato] = (
-                st.session_state.votos_a.get(candidato, 0) + 1
+                st.session_state.votos_a.get(
+                    candidato,
+                    0
+                ) + 1
             )
 
             st.session_state.historico.append(
@@ -179,14 +237,19 @@ def confirmar_voto(sistema):
             return True
 
 
-    if sistema == "B":
+    elif sistema == "B":
 
-        candidato = st.session_state.voto_pendente_b
+        candidato = (
+            st.session_state.voto_pendente_b
+        )
 
         if candidato:
 
             st.session_state.votos_b[candidato] = (
-                st.session_state.votos_b.get(candidato, 0) + 1
+                st.session_state.votos_b.get(
+                    candidato,
+                    0
+                ) + 1
             )
 
             st.session_state.historico.append(
@@ -212,13 +275,16 @@ def confirmar_voto(sistema):
 def resultado_integro(votos):
 
     return {
-        c: votos.get(c, 0)
-        for c in CANDIDATOS
+        candidato: votos.get(
+            candidato,
+            0
+        )
+        for candidato in CANDIDATOS
     }
 
 
 # ============================================================
-# RESULTADO MANIPULADO
+# RESULTADO DO SISTEMA A
 # ============================================================
 
 def resultado_manipulado(
@@ -226,55 +292,63 @@ def resultado_manipulado(
     favorecido,
     percentual_transferencia
 ):
+
     """
-    Simulação explícita de manipulação.
+    Demonstração educacional.
 
-    A manipulação somente começa quando o Sistema A
-    atingir pelo menos 10 votos registrados.
-
-    Antes de 10 votos:
-        resultado apresentado = resultado original
+    Até 9 votos:
+        o resultado apresentado é igual ao registro original.
 
     A partir de 10 votos:
-        uma fração dos votos dos demais candidatos é
-        retirada e atribuída ao candidato favorecido.
+        uma parcela dos votos dos demais candidatos é
+        transferida para o candidato favorecido.
 
-    O registro original continua disponível para comparação.
+    O registro original permanece preservado.
     """
 
-    original = resultado_integro(votos)
+    original = resultado_integro(
+        votos
+    )
+
+    total_votos = sum(
+        original.values()
+    )
+
 
     # --------------------------------------------------------
-    # CONTROLE DO LIMIAR
+    # LIMITE DE 10 VOTOS
     # --------------------------------------------------------
 
-    total_votos = sum(original.values())
-
-    # Até 9 votos, nenhum voto é manipulado.
     if total_votos < 10:
+
         return original
+
 
     # --------------------------------------------------------
     # PERCENTUAL ZERO
     # --------------------------------------------------------
 
     if percentual_transferencia <= 0:
+
         return original
 
+
     # --------------------------------------------------------
-    # TOTAL DOS OUTROS CANDIDATOS
+    # VOTOS DOS DEMAIS CANDIDATOS
     # --------------------------------------------------------
 
     total_outros = sum(
         quantidade
-        for candidato, quantidade in original.items()
+        for candidato, quantidade
+        in original.items()
         if candidato != favorecido
     )
 
-    # Se não houver votos dos demais candidatos,
-    # não existe quantidade para transferir.
+
     if total_outros <= 0:
+
         return original
+
 
     # --------------------------------------------------------
     # CALCULA A TRANSFERÊNCIA
@@ -286,21 +360,23 @@ def resultado_manipulado(
         / 100
     )
 
+
     if transferencia <= 0:
+
         return original
 
-    # Cria uma cópia para o resultado apresentado
+
     resultado = original.copy()
 
-    # Acrescenta a transferência ao candidato favorecido
+
+    # Adiciona os votos ao candidato favorecido
     resultado[ favorecido ] += transferencia
 
-    # --------------------------------------------------------
-    # RETIRADA DOS DEMAIS CANDIDATOS
-    # --------------------------------------------------------
 
     restante = transferencia
 
+
+    # Lista dos demais candidatos
     outros = [
         candidato
         for candidato in CANDIDATOS
@@ -308,12 +384,16 @@ def resultado_manipulado(
         and resultado[candidato] > 0
     ]
 
-    # Primeira etapa:
-    # retirada proporcional aos votos originais
+
+    # --------------------------------------------------------
+    # RETIRADA PROPORCIONAL
+    # --------------------------------------------------------
+
     for candidato in outros:
 
         if restante <= 0:
             break
+
 
         retirada = min(
             resultado[candidato],
@@ -327,17 +407,20 @@ def resultado_manipulado(
             )
         )
 
+
         retirada = min(
             retirada,
             restante
         )
 
+
         resultado[candidato] -= retirada
 
         restante -= retirada
 
+
     # --------------------------------------------------------
-    # AJUSTE DO RESTANTE
+    # AJUSTE FINAL
     # --------------------------------------------------------
 
     if restante > 0:
@@ -347,14 +430,17 @@ def resultado_manipulado(
             if restante <= 0:
                 break
 
+
             retirada = min(
                 resultado[candidato],
                 restante
             )
 
+
             resultado[candidato] -= retirada
 
             restante -= retirada
+
 
     return resultado
 
@@ -365,9 +451,12 @@ def resultado_manipulado(
 
 def tabela_resultado(votos):
 
-    total = sum(votos.values())
+    total = sum(
+        votos.values()
+    )
 
     dados = []
+
 
     for candidato in CANDIDATOS:
 
@@ -376,9 +465,11 @@ def tabela_resultado(votos):
             0
         )
 
+
         percentual_resultado = (
             quantidade / total * 100
         ) if total else 0
+
 
         dados.append(
             {
@@ -391,7 +482,10 @@ def tabela_resultado(votos):
             }
         )
 
-    return pd.DataFrame(dados)
+
+    return pd.DataFrame(
+        dados
+    )
 
 
 # ============================================================
@@ -407,39 +501,50 @@ col_a, col_b = st.columns(2)
 
 with col_a:
 
-    st.subheader("🔴 Sistema A")
+    st.subheader(
+        "🔴 Sistema A"
+    )
 
     st.caption(
         "Sistema de demonstração com alteração proposital "
         "do resultado a partir de 10 votos."
     )
 
-    total_votos_a = sum(
+
+    total_atual_a = sum(
         st.session_state.votos_a.values()
     )
 
-    if total_votos_a < 10:
 
-        votos_faltantes = 10 - total_votos_a
+    # --------------------------------------------------------
+    # STATUS DA MANIPULAÇÃO
+    # --------------------------------------------------------
+
+    if total_atual_a < 10:
+
+        votos_faltantes = (
+            10 - total_atual_a
+        )
 
         st.info(
             f"Manipulação ainda não ativada. "
-            f"Faltam {votos_faltantes} voto(s) para atingir "
-            f"o limite de 10 votos."
+            f"Faltam {votos_faltantes} voto(s) "
+            f"para atingir 10 votos."
         )
 
     else:
 
         st.warning(
             "Manipulação ativada para fins educacionais. "
-            f"O resultado apresentado pode favorecer: "
+            f"O resultado apresentado pode favorecer "
             f"**{candidato_preferido}**."
         )
+
 
     st.markdown(
         '<div class="caixa-alerta">'
         '<b>Comportamento simulado.</b><br>'
-        f'O candidato favorecido é: '
+        f'Candidato favorecido: '
         f'<b>{candidato_preferido}</b>.<br>'
         'A alteração começa somente após 10 votos registrados.'
         '</div>',
@@ -447,12 +552,20 @@ with col_a:
     )
 
 
+    # --------------------------------------------------------
+    # ESCOLHA DO CANDIDATO
+    # --------------------------------------------------------
+
     escolha_a = st.radio(
         "Escolha um candidato:",
         CANDIDATOS,
         key="escolha_a"
     )
 
+
+    # --------------------------------------------------------
+    # REGISTRAR VOTO
+    # --------------------------------------------------------
 
     if st.button(
         "Registrar voto no Sistema A",
@@ -465,6 +578,10 @@ with col_a:
         )
 
 
+    # --------------------------------------------------------
+    # CONFIRMAR VOTO
+    # --------------------------------------------------------
+
     if st.session_state.voto_pendente_a:
 
         st.info(
@@ -472,6 +589,7 @@ with col_a:
             f"**{st.session_state.voto_pendente_a}**. "
             "Confirme o voto abaixo."
         )
+
 
         if st.button(
             "✅ Confirmar voto no Sistema A",
@@ -491,12 +609,13 @@ with col_a:
 
 
     # --------------------------------------------------------
-    # RESULTADOS DO SISTEMA A
+    # RESULTADOS SISTEMA A
     # --------------------------------------------------------
 
     votos_a_originais = resultado_integro(
         st.session_state.votos_a
     )
+
 
     votos_a_apresentados = resultado_manipulado(
         st.session_state.votos_a,
@@ -508,6 +627,7 @@ with col_a:
     st.markdown(
         "**Registro original dos votos:**"
     )
+
 
     st.dataframe(
         tabela_resultado(
@@ -522,6 +642,7 @@ with col_a:
         "**Resultado apresentado pelo sistema:**"
     )
 
+
     st.dataframe(
         tabela_resultado(
             votos_a_apresentados
@@ -535,14 +656,17 @@ with col_a:
         votos_a_originais.values()
     )
 
+
     total_apresentado_a = sum(
         votos_a_apresentados.values()
     )
 
 
     st.caption(
-        f"Votos registrados: {total_original_a} | "
-        f"Votos apresentados: {total_apresentado_a}"
+        f"Votos registrados no Sistema A: "
+        f"{total_original_a} | "
+        f"Votos apresentados: "
+        f"{total_apresentado_a}"
     )
 
 
@@ -552,7 +676,9 @@ with col_a:
 
 with col_b:
 
-    st.subheader("🟢 Sistema B")
+    st.subheader(
+        "🟢 Sistema B"
+    )
 
     st.caption(
         "Sistema de referência sem alteração do resultado."
@@ -568,12 +694,20 @@ with col_b:
     )
 
 
+    # --------------------------------------------------------
+    # ESCOLHA DO CANDIDATO
+    # --------------------------------------------------------
+
     escolha_b = st.radio(
         "Escolha um candidato:",
         CANDIDATOS,
         key="escolha_b"
     )
 
+
+    # --------------------------------------------------------
+    # REGISTRAR VOTO
+    # --------------------------------------------------------
 
     if st.button(
         "Registrar voto no Sistema B",
@@ -585,6 +719,10 @@ with col_b:
             escolha_b
         )
 
+
+    # --------------------------------------------------------
+    # CONFIRMAR VOTO
+    # --------------------------------------------------------
 
     if st.session_state.voto_pendente_b:
 
@@ -612,6 +750,10 @@ with col_b:
     st.divider()
 
 
+    # --------------------------------------------------------
+    # RESULTADO SISTEMA B
+    # --------------------------------------------------------
+
     votos_b = resultado_integro(
         st.session_state.votos_b
     )
@@ -637,7 +779,8 @@ with col_b:
 
 
     st.caption(
-        f"Total de votos registrados: {total_b}"
+        f"Total de votos registrados no Sistema B: "
+        f"{total_b}"
     )
 
 
@@ -706,19 +849,15 @@ total_registrado_a = sum(
     votos_a_originais.values()
 )
 
-total_apresentado_a = sum(
-    votos_a_apresentados.values()
-)
-
 
 if total_registrado_a > 0:
 
     diferencas = {
-        c:
-        votos_a_apresentados[c]
-        - votos_a_originais[c]
+        candidato:
+        votos_a_apresentados[candidato]
+        - votos_a_originais[candidato]
 
-        for c in CANDIDATOS
+        for candidato in CANDIDATOS
     }
 
 
@@ -749,21 +888,19 @@ if total_registrado_a > 0:
             hide_index=True
         )
 
+    elif total_registrado_a < 10:
+
+        st.success(
+            "Nenhuma alteração foi aplicada. "
+            "O Sistema A ainda não atingiu 10 votos."
+        )
+
     else:
 
-        if total_registrado_a < 10:
-
-            st.success(
-                "Nenhuma alteração foi aplicada. "
-                "O Sistema A ainda não atingiu 10 votos."
-            )
-
-        else:
-
-            st.success(
-                "Nenhuma diferença foi detectada "
-                "com a configuração atual."
-            )
+        st.info(
+            "Nenhuma diferença foi detectada "
+            "com a configuração atual."
+        )
 
 
     st.warning(
